@@ -6,7 +6,7 @@ import { BASE_PROMPT, getSystemPrompt } from './prompts';
 import { nodebasePrompt } from './defaults/node';
 import { reactbasePrompt } from './defaults/react';
 
-console.log("OpenRouter API Key:", process.env.OPENROUTER_API_KEY); 
+console.log("OpenRouter API Key:", process.env.OPENROUTER_API_KEY);
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -29,7 +29,7 @@ app.get('/template', async (req, res) => {
     max_tokens: 200
   })
 
-  const answer = response.choices[0].message.content; 
+  const answer = response.choices[0].message.content;
 
   if (answer == "react") {
     res.json({
@@ -37,7 +37,7 @@ app.get('/template', async (req, res) => {
       uiPrompts: [reactbasePrompt]
     })
     return;
-  } 
+  }
 
   if (answer === "node") {
     res.json({
@@ -54,25 +54,21 @@ app.get('/template', async (req, res) => {
 })
 
 
+app.post('/chat', async (req, res) => {
 
+  const messages = req.body.messages;
 
-async function main() {
   const completion = await openai.chat.completions.create({
     messages: [
       { role: "system", content: getSystemPrompt() },
-      { role: "user", content: "Create a simple todo" }
+      { role: "user", content: messages }
     ],
     model: "deepseek/deepseek-r1:free",
-    max_tokens: 1024,
+    max_tokens: 8000,
     stream: true,
   })
+  console.log(completion)
+  res.json({ completion })
+})
 
-  for await (const chunk of completion) {
-    const content = chunk.choices[0]?.delta?.content || '';
-    if (content) {  // only log if there's actual content
-      process.stdout.write(content);
-    }
-  }
-
-}
-main();
+app.listen(3000)
